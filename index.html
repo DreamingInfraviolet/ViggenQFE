@@ -1,0 +1,97 @@
+<head>
+  <meta charset="UTF-8"/>
+  <title>DCS Viggen QFE Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="root">
+    <div class="foreground">
+      <h1>Viggen QFE Calculator</h1>
+      <hr/>
+      <h2>QNH</h2>
+      <section class="twin-input qnh">
+        <div class="input-block">
+          <label>Inches of Mercury</label>
+          <input id="qnh-mercury" type="number" value="29.92"></input>
+        </div>
+        <div class="input-block">
+          <label>Hectopascals</label>
+          <input id="qnh-hpa" type="number" value="1013.24"></input>
+        </div>
+      </section>
+      <hr/>
+      <h2>Target Altitude</h2>
+      <section class="twin-input altitude">
+        <div class="input-block">
+          <label>Feet</label>
+          <input id="altitude-feet" type="number" value="0"></input>
+        </div>
+        <div class="input-block">
+          <label>Metres</label>
+          <input id="altitude-metres" type="number" value="0"></input>
+        </div>
+      </section>
+      <hr/>
+      <section class="result-section">
+        <span id="result"></span>
+      </section>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="main.css"></link>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", (event) => {
+      const eQnhMercury = document.getElementById("qnh-mercury");
+      const eQnhHpa = document.getElementById("qnh-hpa");
+      const eAltitudeFeet = document.getElementById("altitude-feet");
+      const eAltitudeMetres = document.getElementById("altitude-metres");
+      const eResult = document.getElementById("result");
+
+      const roundTo2 = (num) => Math.round(num * 100) / 100;
+      const mercuryToHpa = (pressureinHg) => 33.865 * pressureinHg;
+      const hpaToMercury = (pressureinHpa) => 0.02953 * pressureinHpa;
+      const feetToMetres = (feet) => 0.3048 * feet;
+      const metresToFeet = (metres) => 3.28084 * metres;
+      const calcQfe = (qnh, altitude) => Math.pow(1 + altitude * -0.0000225577,5.25588) * qnh;
+
+      const onUpdate = () => {
+        const qnh = eQnhHpa.value;
+        const alt = eAltitudeMetres.value;
+
+        if (alt > 40000) {
+          eResult.innerText = "You're in space ‍🚀"
+        } else {
+          const result = calcQfe(qnh, alt);
+          eResult.innerText = roundTo2(result);
+        }
+      }
+
+      eQnhMercury.addEventListener("input", () => {
+        const qnhMercury = eQnhMercury.value;
+        eQnhHpa.value = roundTo2(mercuryToHpa(qnhMercury));
+        onUpdate();
+      });
+
+      eQnhHpa.addEventListener("input", () => {
+        const qnhHpa = eQnhHpa.value;
+        eQnhMercury.value = roundTo2(hpaToMercury(qnhHpa));
+        onUpdate();
+      });
+
+      eAltitudeFeet.addEventListener("input", () => {
+        const altitudeFeet = eAltitudeFeet.value;
+        eAltitudeMetres.value = roundTo2(feetToMetres(altitudeFeet));
+        onUpdate();
+      });
+
+      eAltitudeMetres.addEventListener("input", () => {
+        const altitudeMetres = eAltitudeMetres.value;
+        eAltitudeFeet.value = roundTo2(metresToFeet(altitudeMetres));
+        onUpdate();
+      });
+
+      onUpdate();
+    });
+  </script>
+</body>
